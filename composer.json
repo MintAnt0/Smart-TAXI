@@ -1,0 +1,12 @@
+{
+    "name": "mintant0/smart-taxi",
+    "description": "Application web de réservation de taxis (PHP / MySQL) - projet BTS CIEL 2024-2025",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.0",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "phpmailer/phpmailer": "^6.0"
+    }
+}

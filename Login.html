@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - Elite Taxi</title>
+  <link rel="stylesheet" href="Style.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap');
+    body { background: #121212; color: #FFD700; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 400px; margin: 80px auto; padding: 30px; border: 1px solid #FFD700; border-radius: 10px; background: #1E1E1E; }
+    h1 { font-family: 'Playfair Display', serif; text-align: center; font-size: 28px; letter-spacing: 1px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group input {
+      width: 100%; padding: 12px; background: #2c2c2c; color: #FFD700;
+      border: 1px solid rgba(255,215,0,0.3); border-radius: 6px;
+      font-size: 14px;
+    }
+    .btn-primary {
+      width: 100%; background: #FFD700; color: #000; font-weight: bold;
+      padding: 14px; border: none; border-radius: 6px; font-size: 16px;
+      cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .back-link {
+      display: block; margin-bottom: 20px; color: #AAA;
+      text-decoration: none; font-size: 14px;
+    }
+    .back-link:hover { color: #FFD700; }
+    .rgpd-note {
+      font-size: 12px; text-align: center; color: #AAA; margin-top: 20px;
+    }
+    .navbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 40px; background-color: #1E1E1E; color: #FFD700;
+    }
+    .nav-links a {
+      margin-left: 20px; text-decoration: none; color: #FFD700;
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: #fff; }
+    .logo {
+      font-family: 'Playfair Display', serif; font-size: 24px;
+      font-weight: bold; color: #FFD700;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">ELITE TAXI</div>
+    <div class="nav-links">
+      <a href="Home page.html">Accueil</a>
+      <a href="A propos.html">Services</a>
+      <a href="Contac.html">Contact</a>
+      <a href="Tarifs.html">Tarifs</a>
+      <a href="Se connecter_Inscription.html">Connexion</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <a href="Se connecter_Inscription.html" class="back-link">← Retour</a>
+    <h1>Connexion</h1>
+    <form id="loginForm">
+      <div class="form-group">
+        <input type="email" id="email" placeholder="Adresse email" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="password" placeholder="Mot de passe" required>
+      </div>
+      <button type="submit" class="btn-primary">SE CONNECTER</button>
+    </form>
+    <p class="rgpd-note">
+      En vous connectant, vous acceptez nos 
+      <a href="Conditions d'utilisattion.html" style="color:#FFD700;">Conditions d'utilisation</a> 
+      et notre 
+      <a href="Confidantialite.html" style="color:#FFD700;">Politique de confidentialité</a>.
+    </p>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault(); // Empêche l'envoi classique du formulaire
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        alert("Veuillez remplir tous les champs.");
+        return;
+      }
+
+      // Simulation d'une connexion réussie
+      if (email === "test@elitetaxi.fr" && password === "motdepasse") {
+        alert("Connexion réussie !");
+        window.location.href = "Deconnexion.html"; // Change ce fichier selon ta structure
+      } else {
+        alert("Identifiants incorrects.");
+      }
+    });
+  </script>
+
+</body>
+</html>

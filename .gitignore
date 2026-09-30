@@ -1,0 +1,14 @@
+# --- Secrets : ne jamais versionner ---
+# Configuration locale (identifiants MySQL, clé TomTom, SMTP)
+config.php
+
+# --- Dépendances ---
+# PHPMailer est installé via Composer (voir composer.json)
+/PHPMailer-master/
+/PHPMailer-master.zip
+/vendor/
+
+# --- Divers ---
+.DS_Store
+Thumbs.db
+*.log

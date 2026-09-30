@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bienvenue - Elite Taxi</title>
+  <link rel="stylesheet" href="Style.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap');
+
+    body {
+      background: #121212;
+      color: #FFD700;
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 40px;
+      border: 2px solid #FFD700;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+      background-color: #1E1E1E;
+      text-align: center;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      letter-spacing: 1px;
+    }
+
+    p {
+      font-size: 18px;
+      color: #DDD;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1E1E1E;
+      padding: 15px 30px;
+      border-bottom: 2px solid #FFD700;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: bold;
+      color: #FFD700;
+    }
+
+    .nav-links a {
+      color: #FFD700;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .nav-links a:hover {
+      color: #e6c200;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">ELITE TAXI</div>
+    <div class="nav-links">
+      <a href="Home page.html">Accueil</a>
+      <a href="A propos.html">Services</a>
+      <a href="Contac.html">Contact</a>
+      <a href="Tarifs.html">Tarifs</a>
+      <a href="#" onclick="logout()">Déconnexion</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Bienvenue à bord !</h1>
+    <p>Vous êtes maintenant connecté à votre espace client Elite Taxi.</p>
+    <p>Profitez d’un service de transport haut de gamme et de prestations personnalisées.</p>
+  </div>
+
+  <script>
+    function logout() {
+      alert("À plus tard, cher client, hâte de vous revoir !");
+      window.location.href = "login.php";
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inscription - Elite Taxi</title>
+  <link rel="stylesheet" href="Style.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap');
+    
+    body {
+      background: #121212;
+      color: #FFD700;
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 60px auto;
+      padding: 30px;
+      border: 2px solid #FFD700;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+      background-color: #1E1E1E;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      text-align: center;
+      font-size: 32px;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 16px;
+      color: #DDD;
+      margin-bottom: 20px;
+    }
+
+    .underline {
+      width: 60px;
+      height: 3px;
+      background: #FFD700;
+      margin: 0 auto 30px;
+      border-radius: 2px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    @media (max-width: 500px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      position: relative;
+    }
+
+    .form-group label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      background: #2c2c2c;
+      color: #FFD700;
+      border: 1px solid rgba(255,215,0,0.3);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .form-actions {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: #FFD700;
+      color: #000;
+      text-transform: uppercase;
+      font-weight: bold;
+      padding: 14px 30px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: #e6c200;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .back-link {
+      display: block;
+      margin-bottom: 20px;
+      color: #AAA;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back-link:hover {
+      color: #FFD700;
+    }
+
+    .rgpd-note {
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      margin-top: 20px;
+    }
+
+    .error {
+      color: #FF6B6B;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+      <nav class="navbar">
+        <div class="logo">ELITE TAXI</div>
+        <div class="nav-links">
+            <a href="Home page.html">Accueil</a>
+            <a href="A propos.html">Services</a>
+            <a href="Contac.html">Contact</a>
+            <a href="Tarifs.html">Tarifs</a>
+            <a href="Se connecter_Inscription.html">Connexion</a>
+        </div>
+    </nav>
+
+  <div class="container">
+    <a href="Login.html" class="back-link">← Retour</a>
+    <h1>REJOIGNEZ L'ÉLITE</h1>
+    <p class="subtitle">Découvrez un service de transport d'exception</p>
+    <div class="underline"></div>
+
+    <form id="registerForm" autocomplete="on" novalidate>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="firstname">Prénom</label>
+          <input type="text" id="firstname" placeholder="Prénom" required />
+        </div>
+        <div class="form-group">
+          <label for="lastname">Nom</label>
+          <input type="text" id="lastname" placeholder="Nom" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Adresse email" required />
+        </div>
+        <div class="form-group">
+          <label for="phone">Téléphone</label>
+          <input type="tel" id="phone" placeholder="Téléphone" required pattern="\+?[0-9]{6,}" />
+        </div>
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" placeholder="Mot de passe" required />
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirmer le mot de passe</label>
+          <input type="password" id="confirmPassword" placeholder="Confirmer le mot de passe" required />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-primary" onclick="submitRegister()">CRÉER MON COMPTE</button>
+      </div>
+
+      <div class="error" id="error"></div>
+
+      <p class="rgpd-note">
+        En créant un compte, vous acceptez nos
+        <a href="Conditions d'utilisattion.html" style="color:#FFD700;">Conditions d'utilisation</a>
+        et notre
+        <a href="Confidantialite.html" style="color:#FFD700;">Politique de confidentialité</a>.
+      </p>
+    </form>
+  </div>
+
+  <script>
+    function submitRegister() {
+      const fn = document.getElementById('firstname').value.trim();
+      const ln = document.getElementById('lastname').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const pw = document.getElementById('password').value;
+      const cpw = document.getElementById('confirmPassword').value;
+      const err = document.getElementById('error');
+      err.textContent = '';
+
+      if (!fn || !ln) {
+        err.textContent = 'Veuillez indiquer votre prénom et votre nom.';
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        err.textContent = 'Adresse email invalide.';
+        return;
+      }
+      if (!/^\+?[0-9]{6,}$/.test(phone)) {
+        err.textContent = 'Numéro de téléphone invalide.';
+        return;
+      }
+      if (pw.length < 12) {
+        err.textContent = 'Le mot de passe doit contenir au moins 12 caractères.';
+        return;
+      }
+      if (pw !== cpw) {
+        err.textContent = 'Les mots de passe ne correspondent pas.';
+        return;
+      }
+
+      alert('🎉 Votre compte a bien été créé ! Veuillez vous connecter.');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
