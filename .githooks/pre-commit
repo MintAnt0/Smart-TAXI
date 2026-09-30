@@ -1,0 +1,269 @@
+#!/usr/bin/env bash
+#
+# ============================================================================
+#  Hook pre-commit — projet Smart Taxi
+# ============================================================================
+#
+#  Contrôles effectués sur les fichiers *mis en index* (git add) :
+#
+#    1. secrets    — config.php et credentials codées en dur (bloquant)
+#    2. syntaxe    — php -l sur chaque fichier .php (bloquant)
+#    3. phpcs      — style + règles de sécurité PSR-12 (bloquant)
+#    4. php-cs-fixer — formatage, mode --dry-run (bloquant)
+#    5. composer   — cohérence de composer.json (avertissement)
+#
+#  Installation :
+#      composer run hooks:install      (ou : git config core.hooksPath .githooks)
+#
+#  Contournement ponctuel d'un contrôle, pour un commit :
+#      SKIP=phpcs,format git commit -m "..."
+#      git commit --no-verify            (contourne tout le hook)
+#
+#  Variables d'environnement reconnues :
+#      SKIP           liste de contrôles à ignorer (secrets,syntaxe,phpcs,format,composer)
+#      CS_FIXER_FIX   si vaut 1, corrige le formatage et re-met en index
+#      STRICT         si vaut 1, échoue si un outil est manquant au lieu de le signaler
+# ============================================================================
+
+set -uo pipefail
+
+# --- Localisation de la racine du dépôt -------------------------------------
+RACINE="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    echo "ERREUR  Hook exécuté hors d'un dépôt Git." >&2
+    exit 1
+}
+cd "$RACINE" || exit 1
+
+# --- Couleurs ---------------------------------------------------------------
+if [ -t 1 ]; then
+    ROUGE=$'\033[31m'; VERT=$'\033[32m'; JAUNE=$'\033[33m'
+    GRAS=$'\033[1m';  RESET=$'\033[0m'
+else
+    ROUGE=''; VERT=''; JAUNE=''; GRAS=''; RESET=''
+fi
+
+# --- Fonctions utilitaires --------------------------------------------------
+info()  { printf '%s\n' "${GRAS}==>${RESET} $*"; }
+ok()    { printf '  %sOK%s  %s\n' "$VERT" "$RESET" "$*"; }
+avert() { printf '  %s!%s  %s\n' "$JAUNE" "$RESET" "$*"; }
+err()   { printf '  %sX%s  %s\n' "$ROUGE" "$RESET" "$*"; }
+
+ignoré() {
+    case ",${SKIP:-}," in
+        *",$1,"*) return 0 ;;
+        *)        return 1 ;;
+    esac
+}
+
+echecs=0
+
+# --- Fichiers .php mis en index --------------------------------------------
+# -z : les noms de fichiers du projet contiennent des espaces et des accents
+#      (ex. « contact^test.php », « Conditions d_utilisattion.html »).
+mapfile -d '' FICHIERS_PHP < <(
+    git diff --cached --name-only --diff-filter=ACMR -z -- '*.php'
+)
+
+# --- 1. Détection de secrets ------------------------------------------------
+controle_secrets() {
+    if ignoré secrets; then return 0; fi
+
+    local fichier nom contenu
+    local trouve=0
+
+    for fichier in "${FICHIERS_PHP[@]}"; do
+        nom="$(basename "$fichier")"
+
+        # config.php ne doit jamais être versionné (cf. .gitignore)
+        if [ "$nom" = "config.php" ]; then
+            err "$fichier est un fichier de configuration contenant des identifiants."
+            err    "Utilisez config.example.php comme modèle."
+            trouve=1
+            continue
+        fi
+
+        # On analyse le contenu *mis en index*, pas la copie de travail.
+        contenu="$(git show ":$fichier" 2>/dev/null)" || continue
+
+        # Motif : clé suivi d'une valeur réellement renseignée.
+        # Les valeurs d'exemple (VOTRE_..., CHANGEME, getenv, vide) sont admises.
+        # Motifs génériques, insensibles à la casse, sur les noms de
+        # paramètres sensibles. La valeur doit être un littéral entre
+        # guillemets d'au moins 8 caractères : les appels de fonction comme
+        # password_hash($password, PASSWORD_DEFAULT) ne sont pas visés.
+        local motif_secret="(mot_de_passe|password|passwd|secret|api[_-]?key|cle[_-]?api|token|smtp[_-]?password)"
+        # Les valeurs d'exemple sont admises.
+        local valeurs_exemple="VOTRE_|CHANGEME|your_|YOUR_|exemple|EXAMPLE|xxxxx|\.\.\.|getenv|PLACEHOLDER|a-remplir"
+
+        local correspondances
+        correspondances="$(
+            printf '%s' "$contenu" \
+                | grep -nEi "${motif_secret}[[:space:]]*['\"]?[[:space:]]*(=>|=|:)[[:space:]]*['\"][^'\"]{8,}['\"]" \
+                | grep -vEi "$valeurs_exemple" \
+                || true
+        )"
+
+        if [ -n "$correspondances" ]; then
+            err "$fichier semble contenir un secret en clair."
+            printf '%s\n' "$correspondances" | head -5 | sed 's/^/       /'
+            err "    Déplacez la valeur dans config.php (non versionné)."
+            trouve=1
+        fi
+    done
+
+    if [ "$trouve" -eq 0 ]; then
+        ok "aucun secret détecté"
+    else
+        echecs=$((echecs + 1))
+        return 1
+    fi
+}
+
+# --- 2. Syntaxe PHP ---------------------------------------------------------
+controle_syntaxe() {
+    if ignoré syntaxe; then return 0; fi
+    if [ "${#FICHIERS_PHP[@]}" -eq 0 ]; then ok "aucun fichier PHP à vérifier"; return 0; fi
+
+    local PHP_BIN="${PHP_BIN:-php}"
+    if ! command -v "$PHP_BIN" >/dev/null 2>&1; then
+        if [ "${STRICT:-0}" = "1" ]; then
+            err "PHP introuvable et STRICT=1."; echecs=$((echecs + 1)); return 1
+        fi
+        avert "PHP introuvable — contrôle de syntaxe ignoré."
+        return 0
+    fi
+
+    local fichier sortie
+    local trouve=0
+    for fichier in "${FICHIERS_PHP[@]}"; do
+        if ! sortie="$("$PHP_BIN" -l "$fichier" 2>&1)"; then
+            err "$sortie"
+            trouve=1
+        fi
+    done
+
+    if [ "$trouve" -eq 0 ]; then
+        ok "${#FICHIERS_PHP[@]} fichier(s) PHP — syntaxe valide"
+    else
+        echecs=$((echecs + 1))
+        return 1
+    fi
+}
+
+# --- 3. PHP_CodeSniffer -----------------------------------------------------
+controle_phpcs() {
+    if ignoré phpcs; then return 0; fi
+
+    local PHPCS="vendor/bin/phpcs"
+    if [ ! -x "$PHPCS" ]; then
+        if [ "${STRICT:-0}" = "1" ]; then
+            err "vendor/bin/phpcs introuvable (lancez « composer install ») et STRICT=1."
+            echecs=$((echecs + 1)); return 1
+        fi
+        avert "vendor/bin/phpcs introuvable — lancez « composer install »."
+        return 0
+    fi
+    if [ "${#FICHIERS_PHP[@]}" -eq 0 ]; then ok "aucun fichier PHP à analyser"; return 0; fi
+
+    if "$PHPCS" --standard=phpcs.xml --report=full -- "${FICHIERS_PHP[@]}"; then
+        ok "style conforme (phpcs)"
+    else
+        err "style non conforme (phpcs)"
+        err "    Correction automatique : composer run lint:fix"
+        echecs=$((echecs + 1))
+        return 1
+    fi
+}
+
+# --- 4. PHP-CS-Fixer (formatage) -------------------------------------------
+controle_format() {
+    if ignoré format; then return 0; fi
+
+    local FIXER="vendor/bin/php-cs-fixer"
+    local CONFIG=".php-cs-fixer.php"
+    if [ ! -x "$FIXER" ]; then
+        if [ "${STRICT:-0}" = "1" ]; then
+            err "vendor/bin/php-cs-fixer introuvable (lancez « composer install ») et STRICT=1."
+            echecs=$((echecs + 1)); return 1
+        fi
+        avert "vendor/bin/php-cs-fixer introuvable — lancez « composer install »."
+        return 0
+    fi
+    if [ "${#FICHIERS_PHP[@]}" -eq 0 ]; then ok "aucun fichier PHP à formater"; return 0; fi
+
+    local sortie
+    if [ "${CS_FIXER_FIX:-0}" = "1" ]; then
+        # Mode correction : on met aussi à jour l'index.
+        if sortie="$("$FIXER" fix --config="$CONFIG" --using-cache=no -- "${FICHIERS_PHP[@]}" 2>&1)"; then
+            git add -- "${FICHIERS_PHP[@]}" 2>/dev/null
+            ok "formatage corrigé et remis en index (CS_FIXER_FIX=1)"
+        else
+            printf '%s\n' "$sortie"
+            err "échec du formatage"
+            echecs=$((echecs + 1))
+            return 1
+        fi
+        return 0
+    fi
+
+    # Mode vérification : --dry-run affiche le diff sans rien écrire.
+    # --config est obligatoire dès qu'une liste de fichiers est fournie.
+    # --path-mode=intersection limite l'analyse aux fichiers en intersection
+    # entre la liste fournie et le finder de la configuration.
+    if sortie="$("$FIXER" fix --config="$CONFIG" --dry-run --diff --using-cache=no \
+            --path-mode=intersection -- "${FICHIERS_PHP[@]}" 2>&1)"; then
+        ok "formatage conforme (php-cs-fixer)"
+    else
+        printf '%s\n' "$sortie" | head -60
+        err "formatage non conforme (php-cs-fixer)"
+        err "    Correction automatique : composer run format"
+        echecs=$((echecs + 1))
+        return 1
+    fi
+}
+
+# --- 5. Cohérence de composer.json -----------------------------------------
+controle_composer() {
+    if ignoré composer; then return 0; fi
+
+    local COMPOSER="composer"
+    if ! command -v "$COMPOSER" >/dev/null 2>&1; then
+        avert "composer introuvable — validation de composer.json ignorée."
+        return 0
+    fi
+
+    if "$COMPOSER" validate --no-check-publish --quiet 2>/dev/null; then
+        ok "composer.json valide"
+    else
+        avert "composer.json : avertissements de validation (détail : composer validate)"
+    fi
+
+    # composer.lock est verrouillé dans le dépôt : c'est ce que Dependabot met à jour.
+    if [ -f composer.lock ]; then
+        ok "composer.lock présent (Dépendabot peut proposer des mises à jour)"
+    else
+        avert "composer.lock absent : lancez « composer update » puis versionnez le fichier."
+    fi
+
+    return 0
+}
+
+# --- Exécution --------------------------------------------------------------
+info "Contrôles pre-commit (${#FICHIERS_PHP[@]} fichier(s) PHP en index)"
+printf '\n'
+
+controle_secrets   || true
+controle_syntaxe   || true
+controle_phpcs     || true
+controle_format    || true
+controle_composer  || true
+
+printf '\n'
+if [ "$echecs" -gt 0 ]; then
+    err "${echecs} contrôle(s) en échec — commit annulé."
+    err "Contournement : SKIP=phpcs,format git commit … ou git commit --no-verify"
+    exit 1
+fi
+
+ok "Tous les contrôles sont passés."
+exit 0

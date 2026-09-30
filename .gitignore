@@ -1,14 +1,66 @@
+# ==========================================================
+# Smart Taxi — fichiers à ne jamais versionner
+# ==========================================================
+
 # --- Secrets : ne jamais versionner ---
 # Configuration locale (identifiants MySQL, clé TomTom, SMTP)
 config.php
+config.local.php
+.env
+.env.*
+!.env.example
 
-# --- Dépendances ---
-# PHPMailer est installé via Composer (voir composer.json)
+# --- Dépendances (Composer) ---
+/vendor/
+composer.phar
+
+# La bibliothèque PHPMailer est installée via Composer (voir composer.json).
+# Ces copies manuelles sont obsolètes.
 /PHPMailer-master/
 /PHPMailer-master.zip
-/vendor/
 
-# --- Divers ---
-.DS_Store
-Thumbs.db
+# --- Caches des outils de qualité de code ---
+.php-cs-fixer.cache
+.php-cs-fixer.php.cache
+.phpcs-cache
+.phpunit.cache
+.phpunit.result.cache
+.eslintcache
+
+# --- Logs et fichiers générés à l'exécution ---
 *.log
+/logs/
+/tmp/
+*.pid
+
+# --- Sauvegardes de base de données (le schéma .sql reste versionné) ---
+*.sql.bak
+*.sql.dump
+dump*.sql
+
+# --- Environnements de développement ---
+/node_modules/
+/.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.buildpath
+.settings/
+
+# --- Système d'exploitation ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# --- Fichiers d'upload / exports utilisateur ---
+/uploads/
+/storage/logs/

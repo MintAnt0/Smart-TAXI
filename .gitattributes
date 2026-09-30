@@ -1,0 +1,23 @@
+# Normalisation des fins de ligne : LF en interne, quelle que soit la
+# plateforme. Sans cela, les fichiers PHP alternaient CRLF/LF et chaque
+# contrôle de style voyait le fichier entier comme modifié.
+* text=auto eol=lf
+
+# Types de fichiers à ne jamais convertir
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
+*.mp4  binary
+
+# Fichiers de configuration avec secrets : rester en LF, jamais de conversion
+config.php        text eol=lf
+config.local.php  text eol=lf
+.env              text eol=lf
+
+# Scripts : ligne shebang obligatoire, toujours LF
+*.sh   text eol=lf
+.githooks/* text eol=lf

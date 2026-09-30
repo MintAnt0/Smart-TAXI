@@ -49,37 +49,37 @@ try {
 
         // Validation des champs obligatoires
         if (empty($prenom) || empty($nom) || empty($email) || empty($telephone) || empty($password) || empty($confirmPassword)) {
-            $error = "❌ Tous les champs sont obligatoires.";
+            $error = '❌ Tous les champs sont obligatoires.';
         }
         // Validation de l'email
         elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = "❌ Adresse email invalide.";
+            $error = '❌ Adresse email invalide.';
         }
         // Validation du téléphone
         elseif (!preg_match('/^\+?[0-9]{6,}$/', $telephone)) {
-            $error = "❌ Numéro de téléphone invalide.";
+            $error = '❌ Numéro de téléphone invalide.';
         }
         // Validation du mot de passe
         elseif (strlen($password) < 12) {
-            $error = "❌ Le mot de passe doit contenir au moins 12 caractères.";
+            $error = '❌ Le mot de passe doit contenir au moins 12 caractères.';
         }
         // Vérification de la correspondance des mots de passe
         elseif ($password !== $confirmPassword) {
-            $error = "❌ Les mots de passe ne correspondent pas.";
+            $error = '❌ Les mots de passe ne correspondent pas.';
         }
         else {
             // Vérifie si l'email est déjà utilisé
-            $check = $pdo->prepare("SELECT COUNT(*) FROM User WHERE EMAIL_USER = :email");
+            $check = $pdo->prepare('SELECT COUNT(*) FROM User WHERE EMAIL_USER = :email');
             $check->execute([':email' => $email]);
-            
+
             if ($check->fetchColumn() > 0) {
-                $error = "❌ Cet email est déjà utilisé.";
+                $error = '❌ Cet email est déjà utilisé.';
             } else {
                 // Hash du mot de passe pour la sécurité
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                
+
                 // Insertion en base de données
-                $stmt = $pdo->prepare("
+                $stmt = $pdo->prepare('
                     INSERT INTO User (
                         ID_TYPE_USER,
                         NOM_USER,
@@ -91,7 +91,7 @@ try {
                     ) VALUES (
                         :type, :nom, :prenom, :email, :password, :telephone, NOW()
                     )
-                ");
+                ');
 
                 $stmt->execute([
                     ':type' => 'CLI',
@@ -102,13 +102,12 @@ try {
                     ':telephone' => $telephone
                 ]);
 
-                $message = "✅ Votre compte a été créé avec succès ! ID utilisateur : " . $pdo->lastInsertId();
+                $message = '✅ Votre compte a été créé avec succès ! ID utilisateur : ' . $pdo->lastInsertId();
             }
         }
     }
-
 } catch (PDOException $e) {
-    $error = "❌ Erreur de base de données : " . $e->getMessage();
+    $error = '❌ Erreur de base de données : ' . $e->getMessage();
 }
 ?>
 
@@ -285,17 +284,16 @@ try {
     <p class="subtitle">Découvrez un service de transport d'exception</p>
     <div class="underline"></div>
 
-    <?php if ($error): ?>
+    <?php if ($error) : ?>
         <div class="error"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
 
-    <?php if ($message): ?>
+    <?php if ($message) : ?>
         <div class="success"><?php echo htmlspecialchars($message); ?></div>
         <div style="text-align: center; margin-top: 20px;">
             <a href="Login.html" style="color: #FFD700; text-decoration: none;">→ Se connecter maintenant</a>
         </div>
-    <?php else: ?>
-
+    <?php else : ?>
     <form method="POST" action="" autocomplete="on" novalidate>
       <div class="form-grid">
         <div class="form-group">

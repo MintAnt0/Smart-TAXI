@@ -8,13 +8,13 @@ $config = require __DIR__ . '/config.php';
 
 $host = $config['db']['host'];
 $port = $config['db']['port'];
-$db   = $config['db']['name'];
+$db = $config['db']['name'];
 $user = $config['db']['user'];
 $pass = $config['db']['pass'];
 $charset = $config['db']['charset'];
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ];
 
@@ -29,7 +29,7 @@ try {
 
 // 2. Traitement du formulaire de connexion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error_message) {
-    $email    = trim($_POST['email'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if (!$email || !$password) {
@@ -49,11 +49,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error_message) {
                     $error_message = 'Email ou mot de passe incorrect';
                 } else {
                     // 5. Authentification réussie : création de session
-                    $_SESSION['user_id']   = $user_data['ID_USER'];
+                    $_SESSION['user_id'] = $user_data['ID_USER'];
                     $_SESSION['user_prenom'] = $user_data['PRENOM_USER'];
                     $_SESSION['user_nom'] = $user_data['NOM_USER'];
                     $_SESSION['user_email'] = $email;
-                    
+
                     // 6. Redirection vers la page d'accueil
                     header('Location: Home page.html');
                     exit;
@@ -250,11 +250,11 @@ if (isset($_GET['error']) && empty($error_message)) {
     <p class="subtitle">Accédez à votre espace client</p>
     <div class="underline"></div>
     
-    <?php if (!empty($error_message)): ?>
+    <?php if (!empty($error_message)) : ?>
       <div class="error"><?php echo htmlspecialchars($error_message); ?></div>
     <?php endif; ?>
 
-    <?php if (isset($_GET['success'])): ?>
+    <?php if (isset($_GET['success'])) : ?>
       <div class="success">Inscription réussie ! Vous pouvez maintenant vous connecter.</div>
     <?php endif; ?>
     

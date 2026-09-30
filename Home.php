@@ -10,15 +10,15 @@ $config = require __DIR__ . '/config.php';
 
 $host = $config['db']['host'];
 $port = $config['db']['port'];
-$db   = $config['db']['name'];
+$db = $config['db']['name'];
 $user = $config['db']['user'];
 $pass = $config['db']['pass'];
 
 $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=" . $config['db']['charset'];
 $options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
+    PDO::ATTR_EMULATE_PREPARES => false,
 ];
 
 try {
@@ -35,8 +35,9 @@ define('TOMTOM_API_KEY', $config['tomtom']['api_key']);
 /**
  * Renvoie [lat, lon] pour une adresse donnée via l'API TomTom.
  */
-function geocode(string $address): array {
-    $url  = "https://api.tomtom.com/search/2/geocode/" . urlencode($address) . ".json?key=" . TOMTOM_API_KEY;
+function geocode(string $address): array
+{
+    $url = 'https://api.tomtom.com/search/2/geocode/' . urlencode($address) . '.json?key=' . TOMTOM_API_KEY;
     $resp = @file_get_contents($url);
     if ($resp === false) {
         throw new Exception('Erreur de connexion à l\'API TomTom.');
@@ -48,15 +49,17 @@ function geocode(string $address): array {
             $data['results'][0]['position']['lon']
         ];
     }
+
     throw new Exception('Adresse introuvable : ' . $address);
 }
 
 /**
  * Calcule le résumé d'itinéraire via l'API TomTom (distance et durée).
  */
-function calculateRouteSummary(array $start, array $end): array {
+function calculateRouteSummary(array $start, array $end): array
+{
     $startStr = implode(',', $start);
-    $endStr   = implode(',', $end);
+    $endStr = implode(',', $end);
     $url = "https://api.tomtom.com/routing/1/calculateRoute/{$startStr}:{$endStr}/json?key=" . TOMTOM_API_KEY;
     $resp = @file_get_contents($url);
     if ($resp === false) {
@@ -66,47 +69,58 @@ function calculateRouteSummary(array $start, array $end): array {
     if (!empty($data['routes'][0]['summary'])) {
         return $data['routes'][0]['summary'];
     }
+
     throw new Exception('Impossible de calculer l\'itinéraire');
 }
 
 /**
  * Calcule le prix de base selon la distance (km).
  */
-function calcBasePrice(float $distanceKm): float {
+function calcBasePrice(float $distanceKm): float
+{
     $base = 4.40;
-    if ($distanceKm <= 5)      { $rate = 2.50; }
-    elseif ($distanceKm <= 20) { $rate = 2.00; }
-    elseif ($distanceKm <= 50) { $rate = 1.75; }
-    else                       { $rate = 1.50; }
+    if ($distanceKm <= 5) {
+        $rate = 2.50;
+    }
+    elseif ($distanceKm <= 20) {
+        $rate = 2.00;
+    }
+    elseif ($distanceKm <= 50) {
+        $rate = 1.75;
+    }
+    else {
+        $rate = 1.50;
+    }
+
     return $base + ($distanceKm * $rate);
 }
 
 // 4. Gestion des requêtes AJAX pour le calcul
 if (isset($_GET['action']) && $_GET['action'] === 'calculate') {
     header('Content-Type: application/json');
-    
+
     try {
         $departure = $_GET['departure'] ?? '';
         $arrival = $_GET['arrival'] ?? '';
-        $luggage = (int) ($_GET['luggage'] ?? 0);
+        $luggage = (int)($_GET['luggage'] ?? 0);
         $fifthPassenger = isset($_GET['fifthPassenger']) ? 1 : 0;
-        
+
         if (empty($departure) || empty($arrival)) {
             throw new Exception('Adresses de départ et d\'arrivée requises');
         }
-        
+
         // Géocodage et calcul d'itinéraire
         list($lat1, $lon1) = geocode($departure);
         list($lat2, $lon2) = geocode($arrival);
         $summary = calculateRouteSummary([$lat1, $lon1], [$lat2, $lon2]);
         $distanceKm = round($summary['lengthInMeters'] / 1000, 1);
         $dureeMin = ceil($summary['travelTimeInSeconds'] / 60);
-        
+
         // Calcul du prix
         $basePrice = calcBasePrice($distanceKm);
         $optionsPrice = ($fifthPassenger * 4) + ($luggage * 2);
         $totalPrice = round($basePrice + $optionsPrice, 2);
-        
+
         echo json_encode([
             'success' => true,
             'distance' => $distanceKm,
@@ -115,7 +129,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'calculate') {
             'departure_coords' => [$lat1, $lon1],
             'arrival_coords' => [$lat2, $lon2]
         ]);
-        
     } catch (Exception $e) {
         echo json_encode([
             'success' => false,
@@ -129,28 +142,28 @@ if (isset($_GET['action']) && $_GET['action'] === 'calculate') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Récupération et assainissement manuel
-        $first_name     = htmlspecialchars(trim($_POST['firstName'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $last_name      = htmlspecialchars(trim($_POST['lastName'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $phone          = htmlspecialchars(trim($_POST['phone'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $email_raw      = trim($_POST['email'] ?? '');
-        $email          = filter_var($email_raw, FILTER_VALIDATE_EMAIL);
-        $departure      = htmlspecialchars(trim($_POST['departure'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $arrival        = htmlspecialchars(trim($_POST['arrival'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $date           = htmlspecialchars(trim($_POST['date'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $time           = htmlspecialchars(trim($_POST['time'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $nbrBagages     = (int) filter_var($_POST['luggage'] ?? 0, FILTER_SANITIZE_NUMBER_INT);
+        $first_name = htmlspecialchars(trim($_POST['firstName'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $last_name = htmlspecialchars(trim($_POST['lastName'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $phone = htmlspecialchars(trim($_POST['phone'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $email_raw = trim($_POST['email'] ?? '');
+        $email = filter_var($email_raw, FILTER_VALIDATE_EMAIL);
+        $departure = htmlspecialchars(trim($_POST['departure'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $arrival = htmlspecialchars(trim($_POST['arrival'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $date = htmlspecialchars(trim($_POST['date'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $time = htmlspecialchars(trim($_POST['time'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $nbrBagages = (int)filter_var($_POST['luggage'] ?? 0, FILTER_SANITIZE_NUMBER_INT);
         $fifthPassenger = isset($_POST['fifthPassenger']) ? 1 : 0;
 
         // Vérification des champs obligatoires
         if (
             $first_name === '' ||
-            $last_name  === '' ||
-            $phone      === '' ||
-            $email      === false ||
-            $departure  === '' ||
-            $arrival    === '' ||
-            $date       === '' ||
-            $time       === ''
+            $last_name === '' ||
+            $phone === '' ||
+            $email === false ||
+            $departure === '' ||
+            $arrival === '' ||
+            $date === '' ||
+            $time === ''
         ) {
             throw new Exception('Tous les champs obligatoires doivent être remplis et valides.');
         }
@@ -158,14 +171,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Géocodage et calcul d'itinéraire
         list($lat1, $lon1) = geocode($departure);
         list($lat2, $lon2) = geocode($arrival);
-        $summary    = calculateRouteSummary([$lat1, $lon1], [$lat2, $lon2]);
+        $summary = calculateRouteSummary([$lat1, $lon1], [$lat2, $lon2]);
         $distanceKm = round($summary['lengthInMeters'] / 1000, 1);
-        $dureeMin   = ceil($summary['travelTimeInSeconds'] / 60);
+        $dureeMin = ceil($summary['travelTimeInSeconds'] / 60);
 
         // Calcul du prix
-        $basePrice    = calcBasePrice($distanceKm);
+        $basePrice = calcBasePrice($distanceKm);
         $optionsPrice = ($fifthPassenger * 4) + ($nbrBagages * 2);
-        $totalPrice   = round($basePrice + $optionsPrice, 2);
+        $totalPrice = round($basePrice + $optionsPrice, 2);
 
         // Début de la transaction
         $pdo->beginTransaction();
@@ -203,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':type' => 1,      // Code "Standard"
             ':supp' => $suppId,
             ':base' => $basePrice,
-            ':km'   => $kmRate,
+            ':km' => $kmRate,
         ]);
         $tarifId = $pdo->lastInsertId();
 
@@ -224,22 +237,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              )'
         );
         $stmt->execute([
-            ':t'       => $tarifId,
-            ':dpt'     => $departure,
-            ':arr'     => $arrival,
-            ':dist'    => $distanceKm,
-            ':dur'     => $dureeMin,
-            ':dt'      => "$date $time",
-            ':prix'    => $totalPrice,
+            ':t' => $tarifId,
+            ':dpt' => $departure,
+            ':arr' => $arrival,
+            ':dist' => $distanceKm,
+            ':dur' => $dureeMin,
+            ':dt' => "$date $time",
+            ':prix' => $totalPrice,
             ':clients' => $fifthPassenger ? 5 : 4,
-            ':bags'    => $nbrBagages,
+            ':bags' => $nbrBagages,
         ]);
 
         // Validation de la transaction
         $pdo->commit();
 
         $success_message = "Réservation confirmée ! Distance : {$distanceKm} km, Durée : {$dureeMin} min, Prix : {$totalPrice} €";
-
     } catch (Exception $e) {
         // Rollback en cas d'erreur
         if ($pdo->inTransaction()) {
@@ -310,13 +322,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="reservation-container">
       <h2 style="text-align:center; color:#d4af37; font-family:'Playfair Display', serif; margin-bottom:50px; font-size:36px; text-transform:uppercase; letter-spacing:4px;">Réservation Premium</h2>
       
-      <?php if (isset($success_message)): ?>
+      <?php if (isset($success_message)) : ?>
         <div class="success-message" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-          <?php echo htmlspecialchars($success_message); ?>
+            <?php echo htmlspecialchars($success_message); ?>
         </div>
       <?php endif; ?>
       
-      <?php if (isset($error_message)): ?>
+      <?php if (isset($error_message)) : ?>
         <div class="error-message" style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
           Erreur : <?php echo htmlspecialchars($error_message); ?>
         </div>

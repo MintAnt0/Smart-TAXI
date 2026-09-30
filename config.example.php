@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Modèle de configuration du projet Smart Taxi.
  *
@@ -12,11 +13,11 @@
 
 return [
     'db' => [
-        'host'    => '127.0.0.1',
-        'port'    => 3306,
-        'name'    => 'smart-taxi-project',
-        'user'    => 'VOTRE_UTILISATEUR_MYSQL',
-        'pass'    => 'VOTRE_MOT_DE_PASSE_MYSQL',
+        'host' => '127.0.0.1',
+        'port' => 3306,
+        'name' => 'smart-taxi-project',
+        'user' => 'VOTRE_UTILISATEUR_MYSQL',
+        'pass' => 'VOTRE_MOT_DE_PASSE_MYSQL',
         'charset' => 'utf8mb4',
     ],
 
@@ -29,11 +30,11 @@ return [
     'smtp' => [
         // Pour Gmail, utilisez un mot de passe d'application
         // (et non votre mot de passe personnel).
-        'host'      => 'smtp.gmail.com',
-        'port'      => 587,
-        'username'  => 'VOTRE_ADRESSE_GMAIL',
-        'password'  => 'VOTRE_MOT_DE_PASSE_APPLICATION',
-        'from'      => 'VOTRE_ADRESSE_GMAIL',
+        'host' => 'smtp.gmail.com',
+        'port' => 587,
+        'username' => 'VOTRE_ADRESSE_GMAIL',
+        'password' => 'VOTRE_MOT_DE_PASSE_APPLICATION',
+        'from' => 'VOTRE_ADRESSE_GMAIL',
         'from_name' => 'Elite Taxi',
     ],
 ];

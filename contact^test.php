@@ -1,6 +1,6 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 
 // PHPMailer est installé via Composer : voir composer.json
 if (!file_exists(__DIR__ . '/vendor/autoload.php')) {
@@ -24,13 +24,13 @@ try {
 
     // Infos mail
     $mail->setFrom($config['smtp']['from'], $config['smtp']['from_name']);
-    $mail->addAddress($_POST['email'], );
+    $mail->addAddress($_POST['email'],);
 
     $mail->Subject = '📨 Nouveau message via le formulaire';
     $mail->Body = "Email : {$_POST['email']}\n\nMessage : {$_POST['message']}";
 
     $mail->send();
-    echo "✔️ Message envoyé avec succès.";
+    echo '✔️ Message envoyé avec succès.';
 } catch (Exception $e) {
     echo "❌ Le message n'a pas pu être envoyé. Erreur : {$mail->ErrorInfo}";
 }

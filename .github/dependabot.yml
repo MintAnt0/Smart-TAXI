@@ -1,0 +1,61 @@
+version: 2
+
+updates:
+  # ---------------------------------------------------------------
+  # Dépendances PHP (PHPMailer en production, outils de qualité en dev)
+  # ---------------------------------------------------------------
+  - package-ecosystem: composer
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    labels:
+      - dependabot
+      - php
+    commit-message:
+      prefix: "deps"
+      include: scope
+    groups:
+      # Les outils de qualité de code évoluent ensemble : une seule PR est
+      # plus simple à relire et à tester qu'une PR par outil.
+      outils-dev:
+        patterns:
+          - "friendsofphp/*"
+          - "squizlabs/*"
+          - "symfony/*"
+        update-types:
+          - minor
+          - patch
+      phpmailer:
+        patterns:
+          - "phpmailer/*"
+    ignore:
+      # Les versions majeures de PHP-CS-Fixer changent les noms de règles et
+      # nécessitent une revalidation de .php-cs-fixer.php : traitées à la main.
+      - dependency-name: "friendsofphp/php-cs-fixer"
+        update-types:
+          - version-update:semver-major
+
+  # ---------------------------------------------------------------
+  # Actions GitHub utilisées par la CI
+  # ---------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    labels:
+      - dependabot
+      - ci
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns:
+          - "*"
